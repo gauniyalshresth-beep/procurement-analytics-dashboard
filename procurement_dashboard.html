@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pearl Precision — Procurement Analytics Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #161b22;
+    --border: #21262d;
+    --border2: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #484f58;
+    --accent: #f0a500;
+    --accent2: #e16b0e;
+    --blue: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --teal: #39d353;
+    --amber: #f0a500;
+    --card-radius: 12px;
+    --glow: 0 0 30px rgba(240,165,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* ─── TOPBAR ─── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: #000;
+  }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.3px;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .badge {
+    background: rgba(240,165,0,0.12);
+    border: 1px solid rgba(240,165,0,0.25);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  .period-label {
+    font-size: 12px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  /* ─── LAYOUT ─── */
+  .main {
+    padding: 24px 28px 48px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  /* ─── FILTER BAR ─── */
+  .filter-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+  }
+  .filter-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+  .filter-select {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    outline: none;
+    min-width: 140px;
+  }
+  .filter-select:focus { border-color: var(--accent); }
+  .filter-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: rgba(240,165,0,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .filter-reset {
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-reset:hover { border-color: var(--red); color: var(--red); }
+  /* ─── SECTION TITLE ─── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 14px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  /* ─── KPI CARDS ─── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .kpi-card:hover {
+    border-color: var(--border2);
+    box-shadow: var(--glow);
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  .kpi-card.blue::before { background: linear-gradient(90deg, var(--blue), transparent); }
+  .kpi-card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .kpi-card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .kpi-card.teal::before { background: linear-gradient(90deg, var(--teal), transparent); }
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 10px;
+  }
+  .kpi-value {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .kpi-icon {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    font-size: 20px;
+    opacity: 0.25;
+  }
+  /* ─── CHART GRID ─── */
+  .chart-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-grid-2-1 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-full { margin-bottom: 16px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 20px 22px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border2); }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .card-sub {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+  .card-badge {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text3);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .chart-wrap {
+    position: relative;
+  }
+  /* ─── INSIGHT TABLE ─── */
+  .insight-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .insight-table th {
+    text-align: left;
+    padding: 8px 10px;
+    color: var(--text2);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .insight-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid rgba(33,38,45,0.6);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .insight-table tr:last-child td { border-bottom: none; }
+  .insight-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .rank-1 { background: rgba(240,165,0,0.2); color: var(--accent); }
+  .rank-2 { background: rgba(88,166,255,0.15); color: var(--blue); }
+  .rank-3 { background: rgba(63,185,80,0.15); color: var(--green); }
+  .rank-n { background: var(--surface2); color: var(--text3); }
+  .bar-mini {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .val-cell {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  /* ─── TABS ─── */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  /* ─── ALERT TAGS ─── */
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.3px;
+  }
+  .tag-red { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-amber { background: rgba(240,165,0,0.15); color: var(--amber); }
+  .tag-green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-blue { background: rgba(88,166,255,0.15); color: var(--blue); }
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .chart-grid-2, .chart-grid-3, .chart-grid-2-1 {
+      grid-template-columns: 1fr;
+    }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .main { padding: 16px 14px 40px; }
+  }
+  @media (max-width: 500px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+  }
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  /* ─── TOOLTIP ─── */
+  #tooltip {
+    position: fixed;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    max-width: 260px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  #tooltip .tt-title { font-weight: 600; color: var(--text); margin-bottom: 4px; font-size: 13px; }
+  #tooltip .tt-row { color: var(--text2); margin-top: 2px; }
+  #tooltip .tt-val { color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+  /* ─── STAT PILLS ─── */
+  .stat-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .stat-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+  .stat-pill-val {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text);
+  }
+  .stat-pill-label {
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 2px;
+  }
+  /* progress bar for delay */
+  .delay-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .delay-label { width: 80px; font-size: 11px; color: var(--text2); text-align: right; flex-shrink: 0; }
+  .delay-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .delay-fill { height: 100%; border-radius: 4px; }
+  .delay-count { width: 50px; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<div id="tooltip">
+  <div class="tt-title" id="tt-title"></div>
+  <div id="tt-body"></div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">PP</div>
+    <div>
+      <div class="logo-text">Pearl Precision Products</div>
+      <div class="logo-sub">PROCUREMENT ANALYTICS · FY 2025–26</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="period-label">Apr 2025 – Mar 2026</span>
+    <span class="badge">LIVE DATA</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">⚡ Filters</span>
+    <div class="filter-group">
+      <select class="filter-select" id="f-branch" onchange="applyFilter()">
+        <option value="">All Branches</option>
+      </select>
+      <select class="filter-select" id="f-group" onchange="applyFilter()">
+        <option value="">All Groups</option>
+      </select>
+      <select class="filter-select" id="f-local" onchange="applyFilter()">
+        <option value="">Local & Import</option>
+        <option value="Domestic">Domestic Only</option>
+        <option value="China">Import (China)</option>
+      </select>
+      <select class="filter-select" id="f-unit" onchange="applyFilter()">
+        <option value="">All Units</option>
+        <option value="Pearl">Pearl</option>
+        <option value="Sanitary">Sanitary</option>
+        <option value="Prohome">Prohome</option>
+      </select>
+      <select class="filter-select" id="f-month" onchange="applyFilter()">
+        <option value="">All Months</option>
+      </select>
+    </div>
+    <button class="filter-reset" onclick="resetFilters()">✕ Reset</button>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="section-title">📊 Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">₹</div>
+      <div class="kpi-label">Total Purchase Value</div>
+      <div class="kpi-value" id="k-total">₹253.1 Cr</div>
+      <div class="kpi-sub" id="k-total-sub">incl. all taxes</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">Basic Purchase Amount</div>
+      <div class="kpi-value" id="k-basic">₹215.9 Cr</div>
+      <div class="kpi-sub">pre-tax value</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-icon">🔢</div>
+      <div class="kpi-label">Total Quantity</div>
+      <div class="kpi-value" id="k-qty">20.4 Cr</div>
+      <div class="kpi-sub">units purchased</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-icon">📋</div>
+      <div class="kpi-label">Total MRN Count</div>
+      <div class="kpi-value" id="k-mrn">20,152</div>
+      <div class="kpi-sub">unique transactions</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🧾</div>
+      <div class="kpi-label">Avg Value / MRN</div>
+      <div class="kpi-value" id="k-avg">₹1.07 L</div>
+      <div class="kpi-sub">per transaction</div>
+    </div>
+    <div class="kpi-card teal">
+      <div class="kpi-icon">🏭</div>
+      <div class="kpi-label">Active Suppliers</div>
+      <div class="kpi-value" id="k-sup">788</div>
+      <div class="kpi-sub">distinct vendors</div>
+    </div>
+  </div>
+
+  <!-- MONTHLY TREND -->
+  <div class="section-title">📈 Purchase Trends</div>
+  <div class="chart-full">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Monthly Purchase Trend</div>
+          <div class="card-sub">Basic Amount vs Total Amount with Tax — Apr 2025 to Mar 2026</div>
+        </div>
+        <div class="card-badge" id="monthly-peak">Peak: Nov 2025</div>
+      </div>
+      <div class="chart-wrap" style="height:260px">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPLIER + ITEMS -->
+  <div class="section-title">🏭 Supplier & Item Analysis</div>
+  <div class="chart-grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Top 10 Suppliers by Value</div>
+          <div class="card-sub">Basic purchase amount (₹ Cr)</div>
+        </div>
+        <div class="card-badge" id="sup-total-badge">788 vendors</div>
+      </div>
+      <div class="chart-wrap" style="height:280px">
+        <canvas id="supplierChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Top 15 Items by Purchase Value</div>
+          <div class="card-sub">Basic amount (₹ Cr)</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:280px">
+        <canvas id="itemChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISTRIBUTION CHARTS -->
+  <div class="section-title">🗂 Distribution Analysis</div>
+  <div class="chart-grid-3">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Branch-wise Distribution</div>
+          <div class="card-sub">Purchase value by unit</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="branchChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Local vs Import Split</div>
+          <div class="card-sub">Domestic vs China sourcing</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="localImportChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Purchase by Category Group</div>
+          <div class="card-sub">Top 10 material groups</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="groupChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNIT SPLIT -->
+  <div class="chart-grid-2-1">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Quantity vs Purchase Value — Scatter Analysis</div>
+          <div class="card-sub">Top 80 items · size = value · outliers highlighted</div>
+        </div>
+        <div class="card-badge">Cost Pattern Map</div>
+      </div>
+      <div class="chart-wrap" style="height:270px">
+        <canvas id="scatterChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Unit-wise Split</div>
+          <div class="card-sub">Pearl · Sanitary · Prohome</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:180px; padding-top:10px">
+        <canvas id="unitChart"></canvas>
+      </div>
+      <div class="stat-row" id="unit-stats"></div>
+    </div>
+  </div>
+
+  <!-- TAX ANALYSIS -->
+  <div class="section-title">🧾 Tax & Invoice Analysis</div>
+  <div class="chart-grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Tax Breakdown</div>
+          <div class="card-sub">IGST · SGST · CGST · IGST Import</div>
+        </div>
+        <div id="total-tax-badge" class="card-badge">Total: ₹0</div>
+      </div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="taxChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Invoice Delay Analysis</div>
+          <div class="card-sub">Days between Bill Date and Invoice Date</div>
+        </div>
+      </div>
+      <div id="delay-bars" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- ADVANCED INSIGHTS -->
+  <div class="section-title">🔍 Advanced Procurement Insights</div>
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('top5', this)">🏆 Top 5 Suppliers</button>
+    <button class="tab-btn" onclick="switchTab('bot5', this)">⚠️ Bottom 5</button>
+    <button class="tab-btn" onclick="switchTab('hvlq', this)">💎 High Value Low Qty</button>
+    <button class="tab-btn" onclick="switchTab('bulk', this)">📦 Bulk Items</button>
+  </div>
+
+  <div class="card">
+    <!-- Top 5 -->
+    <div id="tab-top5" class="tab-content active">
+      <table class="insight-table" id="top5-table"></table>
+    </div>
+    <!-- Bottom 5 -->
+    <div id="tab-bot5" class="tab-content">
+      <table class="insight-table" id="bot5-table"></table>
+    </div>
+    <!-- High Value Low Qty -->
+    <div id="tab-hvlq" class="tab-content">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Critical purchases — high spend, low quantity. These are strategic/capital items needing special oversight.</p>
+      <table class="insight-table" id="hvlq-table"></table>
+    </div>
+    <!-- Bulk -->
+    <div id="tab-bulk" class="tab-content">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">High-volume low-value items — consumables & packaging with bulk purchasing patterns.</p>
+      <table class="insight-table" id="bulk-table"></table>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+// EMBEDDED DATA
+// ═══════════════════════════════════════════════════════
+const RAW = {"kpis":{"total_purchase_value":2530753762.85,"total_basic_value":2158526540.26,"total_qty":203827640.97,"total_mrns":20152,"avg_value_per_mrn":107112.27,"active_suppliers":788},"monthly":[{"month":"2025-04","basic_amt":145883417.44,"total_amt":171445893.44,"mrn_count":1364},{"month":"2025-05","basic_amt":96923121.78,"total_amt":113751445.5,"mrn_count":1128},{"month":"2025-06","basic_amt":130351305.48,"total_amt":152789661.62,"mrn_count":1317},{"month":"2025-07","basic_amt":165522046.4,"total_amt":194409638.49,"mrn_count":1759},{"month":"2025-08","basic_amt":161944961.59,"total_amt":190446593.03,"mrn_count":1593},{"month":"2025-09","basic_amt":196259678.5,"total_amt":230815683.13,"mrn_count":1833},{"month":"2025-10","basic_amt":233604754.15,"total_amt":273882115.41,"mrn_count":1919},{"month":"2025-11","basic_amt":234363655.47,"total_amt":274532519.88,"mrn_count":2117},{"month":"2025-12","basic_amt":174053811.35,"total_amt":203630771.56,"mrn_count":1867},{"month":"2026-01","basic_amt":180026099.69,"total_amt":210465426.4,"mrn_count":1684},{"month":"2026-02","basic_amt":182766891.86,"total_amt":213844309.41,"mrn_count":1679},{"month":"2026-03","basic_amt":256826796.54,"total_amt":300739704.98,"mrn_count":1892}],"top_suppliers":[{"supplier":"Indian Oil Corporation Ltd","value":88079901.5},{"supplier":"FIRE STONE METAL PVT LTD","value":66596757.12},{"supplier":"SILVIN ADDITIVES PVT LTD","value":59683150.0},{"supplier":"CLASS INDIA COMPANY","value":51146325.95},{"supplier":"Bajaj Alloys","value":44954338.9},{"supplier":"Glory Packaging","value":39423161.86},{"supplier":"VRK ALUMART PVT LTD","value":39000355.95},{"supplier":"Saj Industries Pvt Ltd","value":37200000.0},{"supplier":"SIDDHIVINAYAK FUCET IND","value":36996856.09},{"supplier":"SYNERGY INDUSTRIEZ","value":34573875.0}],"bottom_suppliers":[{"supplier":"RMT PACKAGING LLP","value":1300.0},{"supplier":"Union Service Co. Ltd","value":1165.0},{"supplier":"MPS CALIBRATION SERVICE","value":750.0},{"supplier":"USHA PRINTER","value":320.0},{"supplier":"SAINIK PEN & PLASTIC IND","value":10.0}],"top_items":[{"item":"INGOT OF BRASS","value":116434647.55},{"item":"PVC PIPE RESIN HS-1000 R","value":83468215.0},{"item":"PBT SUPBT-120","value":61400000.0},{"item":"PP ICP IM 3120MA","value":45973747.9},{"item":"PBT EP1500 E","value":42787600.0},{"item":"PVC K-6701","value":42711113.08},{"item":"PP B120MA","value":36408170.0},{"item":"CPVC PIPE SUPER1PACK","value":35744000.0},{"item":"ALU. EXT. STEP NEW 91mm","value":34641577.98},{"item":"ABS MIF 45 NATURAL","value":33079525.0},{"item":"CPVC PIPE RESIN DCW-67","value":26647000.0},{"item":"POM ULTRAFORM N2320","value":24034000.0},{"item":"S.S.PIPE 304 13MM","value":20795898.23},{"item":"CPVC BRASS RING 1/2\"","value":20741518.4},{"item":"Iron Press SDI07","value":17634100.0}],"branch":[{"branch":"PP UNIT-HO","value":411642781.31},{"branch":"PP UNIT-I","value":59421690.1},{"branch":"PP UNIT-II","value":266490396.78},{"branch":"PP UNIT-III","value":774947.0}],"local_import":[{"type":"China","value":741909.33},{"type":"Domestic","value":2157784630.93}],"tax":{"igst":394167236.23,"sgst":16559406.27,"cgst":16559406.27,"igst_import":4698784.87},"groups":[{"group":"RAW MATERIAL","value":1066066134.37},{"group":"BOP ITEMS","value":506305528.36},{"group":"PACKING ITEMS","value":190507349.3},{"group":"MARKETING ITEMS","value":110523366.8},{"group":"CONSUMABLE","value":66510203.07},{"group":"CP RAW MATERIAL","value":58515531.7},{"group":"CAPITAL GOODS","value":42030548.84},{"group":"REPAIR AND MAINT.","value":37808028.1},{"group":"TOOL ROOM","value":27197430.59},{"group":"P&F RM","value":20579000.0}],"scatter":[{"item":"INGOT OF BRASS","qty":183800.95,"value":116434647.55},{"item":"PVC PIPE RESIN HS-1000 R","qty":1114991.0,"value":83468215.0},{"item":"PBT SUPBT-120","qty":539975.0,"value":61400000.0},{"item":"PP ICP IM 3120MA","qty":433550.0,"value":45973747.9},{"item":"PBT EP1500 E","qty":336875.0,"value":42787600.0},{"item":"PVC K-6701","qty":564021.0,"value":42711113.08},{"item":"PP B120MA","qty":340950.0,"value":36408170.0},{"item":"CPVC PIPE SUPER1PACK","qty":125000.0,"value":35744000.0},{"item":"ALU EXT STEP 91mm","qty":111380.75,"value":34641577.98},{"item":"ABS MIF 45 NATURAL","qty":236023.0,"value":33079525.0},{"item":"CPVC PIPE RESIN DCW","qty":238200.0,"value":26647000.0},{"item":"POM ULTRAFORM N2320","qty":180000.0,"value":24034000.0},{"item":"SS PIPE 304 13MM","qty":61485.32,"value":20795898.23},{"item":"CPVC BRASS RING 1/2","qty":996125.0,"value":20741518.4},{"item":"Iron Press SDI07","qty":55700.0,"value":17634100.0},{"item":"MK-67K CPVC GRADE","qty":139975.0,"value":16125000.0},{"item":"ALU EXT BIG 7007 1830","qty":48458.5,"value":14954081.4},{"item":"PI-ESTER A1005","qty":119924.0,"value":14480000.0},{"item":"UPVC P-700 Fitting","qty":184500.0,"value":14351200.0},{"item":"PP HOMO IM 1110MG","qty":131653.0,"value":13751812.0},{"item":"LLDPE ROTO LL36RA045UV","qty":116000.0,"value":12936060.0},{"item":"HDPE B-52 GAIL","qty":116490.0,"value":12137980.0},{"item":"SPINDLE Q/T 1/2 LIGHT","qty":339000.0,"value":11010720.0},{"item":"PP ICP IM 3030MG","qty":98500.0,"value":10913237.0},{"item":"ALU EXT BIG 2280M","qty":34348.92,"value":10600119.55},{"item":"CHEMICAL GINSOL ACTIV","qty":185.0,"value":10559328.0},{"item":"CPVC FITT SDP F3000","qty":30500.0,"value":10541000.0},{"item":"PBT GF 0230 NA02","qty":78975.0,"value":10348675.0},{"item":"ALU EXT SMALL 1520","qty":32374.94,"value":10028391.65},{"item":"Alu Round Pipe 8801","qty":31780.27,"value":9930060.18},{"item":"HEALTH FAUCET SWAG","qty":39300.0,"value":9749500.0},{"item":"LLDPE ROTO 042R35A","qty":88425.0,"value":9444974.55},{"item":"M.B. 1418/NP","qty":33825.0,"value":9431971.0},{"item":"PI-ESTER A1005 B","qty":75000.0,"value":9205000.0},{"item":"PC 2407 T COVESTRO","qty":54425.0,"value":9136862.5},{"item":"FLORA COCKS HANDLE","qty":207175.0,"value":9022050.0},{"item":"COMBO GIFT PL","qty":20449.0,"value":8895315.0},{"item":"SS SINK 24X18X9","qty":47178.0,"value":8889387.0},{"item":"ABS 1020 NATURAL","qty":60500.0,"value":8779500.0},{"item":"HIGH SPEED DIESEL","qty":99800.0,"value":8767874.0}],"invoice_delay":[{"range":"1 Day","count":8078},{"range":"2-3 Days","count":5881},{"range":"4-7 Days","count":2584},{"range":"8-15 Days","count":746},{"range":"16-30 Days","count":88},{"range":"31-60 Days","count":41},{"range":"60+ Days","count":0}],"high_value_low_qty":[{"item":"CHEMICAL GINSOL ACTIVATOR ULTRA G","qty":185.0,"value":10559328.0},{"item":"Bi-Axial Carousel Rotational Mouldi","qty":1.0,"value":5400000.0},{"item":"GARDEN PIPE M/C CONV","qty":1.0,"value":2980000.0},{"item":"12 SPINDLE CNC MACHINE","qty":1.0,"value":2650000.0},{"item":"PLASTIC COLOR SHEET 100","qty":36.0,"value":2160000.0},{"item":"Wooden CP Panel 2.5x4","qty":374.0,"value":2058050.0},{"item":"CLEAR PU INTERIOR GLOSSY 20 LTR","qty":114.0,"value":1352040.0},{"item":"AIR WASHER 30000 Cfm","qty":2.0,"value":1253000.0},{"item":"RECD FOR 500KVA JENSET","qty":2.0,"value":1200000.0},{"item":"HDPR Powder Coated 2400x2500","qty":22.0,"value":992640.0}],"bulk_items":[{"item":"CERAMIC DISK 15 MM (PAIRS)","qty":2827000.0,"value":58564.0},{"item":"TAP CERAMIC DISC 15 MM PAIR","qty":2332000.0,"value":48664.0},{"item":"AERATOR SMALL FOAM FLOW","qty":1600000.0,"value":16000.0},{"item":"BARCODE STICK POLYESTER 40X15MM","qty":750000.0,"value":36000.0},{"item":"BARCODE STICKER 70X35MM","qty":643500.0,"value":62073.0},{"item":"BARCODE STICKER 80X45MM","qty":370000.0,"value":52910.0},{"item":"STICKER SUPER STRONG 32X24MM","qty":328800.0,"value":16440.0},{"item":"HING NUT","qty":274000.0,"value":43840.0},{"item":"RUBBER O RING 5x2.5MM","qty":253600.0,"value":63907.2},{"item":"STICKER CAUTION H/F","qty":242200.0,"value":12110.0}],"units":[{"unit":"Pearl","value":1246631347.12},{"unit":"Prohome","value":53975435.41},{"unit":"Sanitary","value":857919757.73}],"all_branches":["PP UNIT-HO","PP UNIT-I","PP UNIT-II","PP UNIT-III"],"all_groups":["AIRLOCK-FG","ALL PTMT","BOM-Cons.","BOP ITEMS","CAPITAL GOODS","CERAMIC WARE","CONSUMABLE","CP BATH FITTING","CP RAW MATERIAL","CPVC &UPVC","EXPENSES","MARKETING ITEMS","P&F RM","PACKING ITEMS","POWER AND FUEL","PROJECT","RAW MATERIAL","REPAIR AND MAINT.","SERVICE","TOOL ROOM"]};
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+const fmt = (v, dec=1) => {
+  if (v >= 1e7) return '₹' + (v/1e7).toFixed(dec) + ' Cr';
+  if (v >= 1e5) return '₹' + (v/1e5).toFixed(dec) + ' L';
+  if (v >= 1e3) return '₹' + (v/1e3).toFixed(1) + ' K';
+  return '₹' + v.toFixed(0);
+};
+const fmtN = v => {
+  if (v >= 1e7) return (v/1e7).toFixed(1) + ' Cr';
+  if (v >= 1e5) return (v/1e5).toFixed(1) + ' L';
+  if (v >= 1e3) return (v/1e3).toFixed(1) + 'K';
+  return v.toFixed(0);
+};
+const COLORS = ['#f0a500','#58a6ff','#3fb950','#bc8cff','#ff7b72','#79c0ff','#56d364','#d2a8ff','#ffa657','#a5d6ff'];
+const MONTH_LABELS = {'2025-04':'Apr','2025-05':'May','2025-06':'Jun','2025-07':'Jul','2025-08':'Aug','2025-09':'Sep','2025-10':'Oct','2025-11':'Nov','2025-12':'Dec','2026-01':'Jan','2026-02':'Feb','2026-03':'Mar'};
+
+const chartDefaults = () => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { labels: { color: '#8b949e', font: { family: 'Inter', size: 11 }, boxWidth: 12 } },
+    tooltip: { backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1, titleColor: '#e6edf3', bodyColor: '#8b949e', titleFont: { family: 'Syne', weight: '700', size: 13 }, bodyFont: { family: 'Inter', size: 12 }, padding: 12, cornerRadius: 8 }
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// KPI UPDATE
+// ═══════════════════════════════════════════════════════
+function updateKPIs(d) {
+  document.getElementById('k-total').textContent = fmt(d.total_purchase_value);
+  document.getElementById('k-basic').textContent = fmt(d.total_basic_value);
+  document.getElementById('k-qty').textContent = fmtN(d.total_qty);
+  document.getElementById('k-mrn').textContent = d.total_mrns.toLocaleString('en-IN');
+  document.getElementById('k-avg').textContent = fmt(d.avg_value_per_mrn);
+  document.getElementById('k-sup').textContent = d.active_suppliers.toLocaleString();
+}
+updateKPIs(RAW.kpis);
+
+// ═══════════════════════════════════════════════════════
+// POPULATE FILTERS
+// ═══════════════════════════════════════════════════════
+const fbranch = document.getElementById('f-branch');
+RAW.all_branches.forEach(b => { const o = document.createElement('option'); o.value = b; o.textContent = b; fbranch.appendChild(o); });
+const fgroup = document.getElementById('f-group');
+RAW.all_groups.forEach(g => { const o = document.createElement('option'); o.value = g; o.textContent = g; fgroup.appendChild(o); });
+const fmonth = document.getElementById('f-month');
+RAW.monthly.forEach(m => { const o = document.createElement('option'); o.value = m.month; o.textContent = (MONTH_LABELS[m.month]||m.month) + ' ' + m.month.split('-')[0]; fmonth.appendChild(o); });
+
+// ═══════════════════════════════════════════════════════
+// MONTHLY CHART
+// ═══════════════════════════════════════════════════════
+let monthlyChart;
+function buildMonthlyChart(data) {
+  const labels = data.map(m => MONTH_LABELS[m.month] || m.month);
+  const basic = data.map(m => +(m.basic_amt/1e7).toFixed(2));
+  const total = data.map(m => +(m.total_amt/1e7).toFixed(2));
+  const mrns = data.map(m => m.mrn_count);
+
+  // Find peak
+  const maxIdx = basic.indexOf(Math.max(...basic));
+  document.getElementById('monthly-peak').textContent = 'Peak: ' + labels[maxIdx];
+
+  if (monthlyChart) monthlyChart.destroy();
+  monthlyChart = new Chart(document.getElementById('monthlyChart'), {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'line', label: 'Total (with Tax)', data: total,
+          borderColor: '#f0a500', backgroundColor: 'rgba(240,165,0,0.08)',
+          borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 6,
+          pointBackgroundColor: '#f0a500', yAxisID: 'y'
+        },
+        {
+          type: 'line', label: 'Basic Amount', data: basic,
+          borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,0.06)',
+          borderWidth: 2, fill: true, tension: 0.4, pointRadius: 4, pointHoverRadius: 6,
+          pointBackgroundColor: '#58a6ff', yAxisID: 'y'
+        },
+        {
+          type: 'bar', label: 'MRN Count', data: mrns,
+          backgroundColor: 'rgba(63,185,80,0.2)', borderColor: 'rgba(63,185,80,0.5)',
+          borderWidth: 1, borderRadius: 4, yAxisID: 'y2'
+        }
+      ]
+    },
+    options: {
+      ...chartDefaults(),
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { ticks: { color: '#484f58', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
+        y: { position: 'left', ticks: { color: '#484f58', callback: v => '₹'+v+'Cr', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y2: { position: 'right', ticks: { color: '#484f58', font: { size: 11 } }, grid: { display: false } }
+      },
+      plugins: { ...chartDefaults().plugins, legend: { ...chartDefaults().plugins.legend, position: 'top' } }
+    }
+  });
+}
+buildMonthlyChart(RAW.monthly);
+
+// ═══════════════════════════════════════════════════════
+// SUPPLIER CHART
+// ═══════════════════════════════════════════════════════
+let supChart;
+function buildSupplierChart(data) {
+  const labels = data.map(s => s.supplier.length > 22 ? s.supplier.substring(0,22)+'…' : s.supplier);
+  const vals = data.map(s => +(s.value/1e7).toFixed(2));
+  if (supChart) supChart.destroy();
+  supChart = new Chart(document.getElementById('supplierChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Purchase Value (₹ Cr)',
+        data: vals,
+        backgroundColor: vals.map((v,i) => i===0 ? 'rgba(240,165,0,0.8)' : 'rgba(88,166,255,0.5)'),
+        borderColor: vals.map((v,i) => i===0 ? '#f0a500' : '#58a6ff'),
+        borderWidth: 1, borderRadius: 5
+      }]
+    },
+    options: {
+      ...chartDefaults(),
+      indexAxis: 'y',
+      scales: {
+        x: { ticks: { color: '#484f58', callback: v => '₹'+v+'Cr', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { display: false } }
+      },
+      plugins: { ...chartDefaults().plugins, legend: { display: false } }
+    }
+  });
+}
+buildSupplierChart(RAW.top_suppliers);
+
+// ═══════════════════════════════════════════════════════
+// ITEMS CHART
+// ═══════════════════════════════════════════════════════
+let itemChart;
+function buildItemChart(data) {
+  const labels = data.map(s => s.item.length > 20 ? s.item.substring(0,20)+'…' : s.item);
+  const vals = data.map(s => +(s.value/1e7).toFixed(2));
+  if (itemChart) itemChart.destroy();
+  itemChart = new Chart(document.getElementById('itemChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Value (₹ Cr)',
+        data: vals,
+        backgroundColor: COLORS.map(c => c + '80'),
+        borderColor: COLORS,
+        borderWidth: 1, borderRadius: 4
+      }]
+    },
+    options: {
+      ...chartDefaults(),
+      indexAxis: 'y',
+      scales: {
+        x: { ticks: { color: '#484f58', callback: v => '₹'+v+'Cr', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { display: false } }
+      },
+      plugins: { ...chartDefaults().plugins, legend: { display: false } }
+    }
+  });
+}
+buildItemChart(RAW.top_items);
+
+// ═══════════════════════════════════════════════════════
+// BRANCH CHART (Doughnut)
+// ═══════════════════════════════════════════════════════
+let branchChart;
+function buildBranchChart(data) {
+  if (branchChart) branchChart.destroy();
+  branchChart = new Chart(document.getElementById('branchChart'), {
+    type: 'doughnut',
+    data: {
+      labels: data.map(b => b.branch),
+      datasets: [{ data: data.map(b => +(b.value/1e7).toFixed(2)), backgroundColor: COLORS, borderColor: '#0a0c10', borderWidth: 3, hoverOffset: 8 }]
+    },
+    options: {
+      ...chartDefaults(),
+      cutout: '62%',
+      plugins: { ...chartDefaults().plugins, tooltip: { ...chartDefaults().plugins.tooltip, callbacks: { label: ctx => ' ' + ctx.label + ': ₹' + ctx.raw + ' Cr' } } }
+    }
+  });
+}
+buildBranchChart(RAW.branch);
+
+// ═══════════════════════════════════════════════════════
+// LOCAL vs IMPORT CHART
+// ═══════════════════════════════════════════════════════
+let liChart;
+function buildLIChart(data) {
+  if (liChart) liChart.destroy();
+  liChart = new Chart(document.getElementById('localImportChart'), {
+    type: 'pie',
+    data: {
+      labels: data.map(d => d.type === 'Domestic' ? 'Domestic' : 'China Import'),
+      datasets: [{ data: data.map(d => +(d.value/1e7).toFixed(2)), backgroundColor: ['#58a6ff80','#ff7b7280'], borderColor: ['#58a6ff','#ff7b72'], borderWidth: 2, hoverOffset: 8 }]
+    },
+    options: { ...chartDefaults(), plugins: { ...chartDefaults().plugins, tooltip: { ...chartDefaults().plugins.tooltip, callbacks: { label: ctx => ' ' + ctx.label + ': ₹' + ctx.raw + ' Cr (' + ((ctx.raw / data.reduce((a,d)=>a+d.value/1e7,0))*100).toFixed(1) + '%)' } } } }
+  });
+}
+buildLIChart(RAW.local_import);
+
+// ═══════════════════════════════════════════════════════
+// GROUP CHART
+// ═══════════════════════════════════════════════════════
+let groupChart;
+function buildGroupChart(data) {
+  if (groupChart) groupChart.destroy();
+  groupChart = new Chart(document.getElementById('groupChart'), {
+    type: 'doughnut',
+    data: {
+      labels: data.map(g => g.group),
+      datasets: [{ data: data.map(g => +(g.value/1e7).toFixed(1)), backgroundColor: COLORS.map(c=>c+'cc'), borderColor: '#0a0c10', borderWidth: 2, hoverOffset: 6 }]
+    },
+    options: { ...chartDefaults(), cutout: '55%', plugins: { ...chartDefaults().plugins, legend: { display: false } } }
+  });
+}
+buildGroupChart(RAW.groups);
+
+// ═══════════════════════════════════════════════════════
+// SCATTER CHART
+// ═══════════════════════════════════════════════════════
+let scatterChart;
+function buildScatterChart(data) {
+  const maxVal = Math.max(...data.map(d=>d.value));
+  const points = data.map((d,i) => ({
+    x: Math.log10(d.qty + 1),
+    y: d.value / 1e7,
+    r: Math.max(4, Math.sqrt(d.value/maxVal) * 22),
+    item: d.item, qty: d.qty, value: d.value
+  }));
+  const outliers = points.filter(p => p.value >= 5e7).map(p => ({...p, color: '#f0a500'}));
+  const normal = points.filter(p => p.value < 5e7).map(p => ({...p, color: '#58a6ff50'}));
+
+  if (scatterChart) scatterChart.destroy();
+  scatterChart = new Chart(document.getElementById('scatterChart'), {
+    type: 'bubble',
+    data: {
+      datasets: [
+        { label: 'High Value (>₹5Cr)', data: outliers, backgroundColor: outliers.map(p=>p.color+'bb'), borderColor: outliers.map(p=>p.color), borderWidth: 1.5 },
+        { label: 'Standard', data: normal, backgroundColor: '#58a6ff30', borderColor: '#58a6ff60', borderWidth: 1 }
+      ]
+    },
+    options: {
+      ...chartDefaults(),
+      scales: {
+        x: { title: { display: true, text: 'log₁₀(Quantity)', color: '#484f58', font: { size: 11 } }, ticks: { color: '#484f58', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
+        y: { title: { display: true, text: 'Value (₹ Cr)', color: '#484f58', font: { size: 11 } }, ticks: { color: '#484f58', callback: v => '₹'+v+'Cr', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      },
+      plugins: {
+        ...chartDefaults().plugins,
+        tooltip: { ...chartDefaults().plugins.tooltip, callbacks: {
+          title: ctx => ctx[0]?.raw?.item || '',
+          label: ctx => [`Qty: ${fmtN(ctx.raw.qty)}`, `Value: ${fmt(ctx.raw.value)}`]
+        }}
+      }
+    }
+  });
+}
+buildScatterChart(RAW.scatter);
+
+// ═══════════════════════════════════════════════════════
+// UNIT CHART
+// ═══════════════════════════════════════════════════════
+let unitChart;
+function buildUnitChart(data) {
+  const total = data.reduce((a,d)=>a+d.value,0);
+  if (unitChart) unitChart.destroy();
+  unitChart = new Chart(document.getElementById('unitChart'), {
+    type: 'bar',
+    data: {
+      labels: data.map(d=>d.unit),
+      datasets: [{ label: 'Purchase Value', data: data.map(d=>+(d.value/1e7).toFixed(1)), backgroundColor: ['#f0a50099','#58a6ff99','#3fb95099'], borderColor: ['#f0a500','#58a6ff','#3fb950'], borderWidth: 2, borderRadius: 6 }]
+    },
+    options: {
+      ...chartDefaults(),
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { color: '#484f58', callback: v => '₹'+v+'Cr', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      },
+      plugins: { ...chartDefaults().plugins, legend: { display: false } }
+    }
+  });
+
+  const stats = document.getElementById('unit-stats');
+  stats.innerHTML = data.map((d,i) => `
+    <div class="stat-pill">
+      <div class="stat-pill-val" style="color:${['#f0a500','#58a6ff','#3fb950'][i]}">${(d.value/total*100).toFixed(1)}%</div>
+      <div class="stat-pill-label">${d.unit}</div>
+    </div>`).join('');
+}
+buildUnitChart(RAW.units);
+
+// ═══════════════════════════════════════════════════════
+// TAX CHART
+// ═══════════════════════════════════════════════════════
+let taxChart;
+function buildTaxChart(tax) {
+  const total = tax.igst + tax.sgst + tax.cgst + tax.igst_import;
+  document.getElementById('total-tax-badge').textContent = 'Total: ' + fmt(total);
+  if (taxChart) taxChart.destroy();
+  taxChart = new Chart(document.getElementById('taxChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['IGST', 'SGST', 'CGST', 'IGST (Import)'],
+      datasets: [{ data: [tax.igst/1e7, tax.sgst/1e7, tax.cgst/1e7, tax.igst_import/1e7].map(v=>+v.toFixed(2)), backgroundColor: ['#f0a50099','#58a6ff99','#3fb95099','#bc8cff99'], borderColor: ['#f0a500','#58a6ff','#3fb950','#bc8cff'], borderWidth: 2, hoverOffset: 8 }]
+    },
+    options: { ...chartDefaults(), cutout: '55%', plugins: { ...chartDefaults().plugins, tooltip: { ...chartDefaults().plugins.tooltip, callbacks: { label: ctx => ' ' + ctx.label + ': ₹' + ctx.raw + ' Cr (' + ((ctx.raw/total*1e7)*100/total).toFixed(1) + '%)' } } } }
+  });
+}
+buildTaxChart(RAW.tax);
+
+// ═══════════════════════════════════════════════════════
+// INVOICE DELAY
+// ═══════════════════════════════════════════════════════
+function buildDelayBars(data) {
+  const max = Math.max(...data.map(d=>d.count));
+  const colors = ['#3fb950','#58a6ff','#f0a500','#ffa657','#ff7b72','#f85149','#cc3333'];
+  const container = document.getElementById('delay-bars');
+  container.innerHTML = data.map((d,i) => `
+    <div class="delay-bar">
+      <div class="delay-label">${d.range}</div>
+      <div class="delay-track"><div class="delay-fill" style="width:${max>0?(d.count/max*100):0}%;background:${colors[i]}"></div></div>
+      <div class="delay-count">${d.count.toLocaleString()}</div>
+    </div>`).join('');
+}
+buildDelayBars(RAW.invoice_delay);
+
+// ═══════════════════════════════════════════════════════
+// INSIGHT TABLES
+// ═══════════════════════════════════════════════════════
+function buildSupTable(id, data, titleLabel) {
+  const maxVal = Math.max(...data.map(d=>d.value));
+  const table = document.getElementById(id);
+  table.innerHTML = `<tr><th>#</th><th>Supplier</th><th>Purchase Value</th><th>Share</th></tr>`;
+  const totalAll = RAW.top_suppliers.reduce((a,d)=>a+d.value,0);
+  data.forEach((d,i) => {
+    const pct = (d.value / totalAll * 100).toFixed(1);
+    const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n';
+    table.innerHTML += `
+      <tr>
+        <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+        <td>${d.supplier}</td>
+        <td class="val-cell">${fmt(d.value)}</td>
+        <td style="min-width:100px">
+          <span class="tag ${d.value>2e7?'tag-amber':'tag-blue'}">${pct}%</span>
+          <div class="bar-mini"><div class="bar-fill" style="width:${(d.value/maxVal*100).toFixed(1)}%"></div></div>
+        </td>
+      </tr>`;
+  });
+}
+
+function buildItemTable(id, data, qtyKey='qty', valKey='value', qtyLabel='Quantity', valLabel='Value') {
+  const table = document.getElementById(id);
+  table.innerHTML = `<tr><th>#</th><th>Item</th><th>${qtyLabel}</th><th>${valLabel}</th><th>Signal</th></tr>`;
+  const maxVal = Math.max(...data.map(d=>d[valKey]));
+  data.forEach((d,i) => {
+    const tag = valKey === 'value' && d[valKey] > 1e6 ? '<span class="tag tag-red">HIGH VALUE</span>' : (d[qtyKey] > 1e5 ? '<span class="tag tag-blue">BULK</span>' : '<span class="tag tag-amber">CRITICAL</span>');
+    table.innerHTML += `
+      <tr>
+        <td><span class="rank-badge ${i<3?'rank-'+(i+1):'rank-n'}">${i+1}</span></td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.item}">${d.item}</td>
+        <td class="val-cell">${fmtN(d[qtyKey])}</td>
+        <td class="val-cell">${fmt(d[valKey])}</td>
+        <td>${tag}</td>
+      </tr>`;
+  });
+}
+
+buildSupTable('top5-table', RAW.top_suppliers.slice(0,5));
+buildSupTable('bot5-table', RAW.bottom_suppliers);
+buildItemTable('hvlq-table', RAW.high_value_low_qty);
+buildItemTable('bulk-table', RAW.bulk_items);
+
+// ═══════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+// FILTERS (client-side filter on pre-aggregated data)
+// ═══════════════════════════════════════════════════════
+function applyFilter() {
+  const branch = document.getElementById('f-branch').value;
+  const group = document.getElementById('f-group').value;
+  const local = document.getElementById('f-local').value;
+  const unit = document.getElementById('f-unit').value;
+  const month = document.getElementById('f-month').value;
+
+  // For demo: filter monthly data by month
+  let monthly = RAW.monthly;
+  if (month) monthly = monthly.filter(m => m.month === month);
+  buildMonthlyChart(monthly);
+
+  // Filter branch chart by branch
+  let branch_data = RAW.branch;
+  if (branch) branch_data = branch_data.filter(b => b.branch === branch);
+  buildBranchChart(branch_data);
+
+  // Filter unit
+  let unit_data = RAW.units;
+  if (unit) unit_data = unit_data.filter(u => u.unit === unit);
+  buildUnitChart(unit_data);
+
+  // Show filter indicator
+  const active = [branch,group,local,unit,month].filter(Boolean).length;
+  document.querySelectorAll('.filter-reset').forEach(el => {
+    el.textContent = active > 0 ? `✕ Reset (${active} active)` : '✕ Reset';
+    el.style.color = active > 0 ? 'var(--red)' : '';
+    el.style.borderColor = active > 0 ? 'rgba(248,81,73,0.4)' : '';
+  });
+}
+
+function resetFilters() {
+  ['f-branch','f-group','f-local','f-unit','f-month'].forEach(id => document.getElementById(id).value = '');
+  buildMonthlyChart(RAW.monthly);
+  buildBranchChart(RAW.branch);
+  buildUnitChart(RAW.units);
+  document.querySelectorAll('.filter-reset').forEach(el => { el.textContent = '✕ Reset'; el.style.color=''; el.style.borderColor=''; });
+}
+</script>
+</body>
+</html>
